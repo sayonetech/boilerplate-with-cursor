@@ -1,46 +1,54 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Button,
+  Container,
   FormControl,
   FormLabel,
-  Input,
-  VStack,
   Heading,
-  Text,
-  Link,
-  useToast,
-  Container,
-  Image,
   HStack,
+  Image,
+  Input,
   InputGroup,
   InputRightElement,
+  Link,
+  Stack,
+  Text,
+  useColorModeValue,
   IconButton,
+  useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const schema = yup.object().shape({
   username: yup.string().required('Username is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  password: yup.string().required('Password is required').min(8, 'Password must be at least 8 characters'),
   password2: yup.string().oneOf([yup.ref('password')], 'Passwords must match').required('Confirm password is required'),
   first_name: yup.string().required('First name is required'),
   last_name: yup.string().required('Last name is required'),
 });
 
-type RegisterFormData = yup.InferType<typeof schema>;
+type RegisterFormData = {
+  username: string;
+  email: string;
+  password: string;
+  password2: string;
+  first_name: string;
+  last_name: string;
+};
 
 export default function Register() {
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -59,11 +67,11 @@ export default function Register() {
         duration: 3000,
         isClosable: true,
       });
-      navigate('/dashboard');
+      navigate('/login');
     } catch (error) {
       toast({
         title: 'Registration failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: 'Please try again with different credentials',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -72,163 +80,210 @@ export default function Register() {
   };
 
   return (
-    <Container maxW="container.xl" py={10}>
-      <HStack spacing={20} align="stretch">
-        {/* Left side - Image */}
-        <Box 
-          flex={1} 
-          display={{ base: 'none', md: 'block' }}
-          position="relative"
-          overflow="hidden"
-          borderRadius="xl"
-          bg="blue.500"
-        >
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            bg="linear-gradient(135deg, #3182CE 0%, #2B6CB0 100%)"
-            opacity={0.9}
-          />
-          <Image
-            src="https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-            alt="Register illustration"
-            objectFit="cover"
-            h="600px"
-            w="100%"
+    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
+      <Container maxW="8xl" py={8} px={4}>
+        <Stack direction={{ base: 'column', lg: 'row' }} spacing={{ base: 8, lg: 16 }} align="center">
+          {/* Left side - Image */}
+          <Box 
+            flex="1"
+            maxW={{ base: 'full', lg: '50%' }}
+            display={{ base: 'none', md: 'block' }}
             position="relative"
-            zIndex={1}
-          />
-          <Box
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            p={8}
-            color="white"
-            zIndex={2}
+            overflow="hidden"
+            borderRadius="xl"
+            bg="brand.500"
+            h={{ base: '300px', lg: '600px' }}
           >
-            <Heading size="xl" mb={4}>Join Our Platform</Heading>
-            <Text fontSize="lg">Create your account and start managing your projects today.</Text>
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              bg="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+              opacity={0.9}
+            />
+            <Image
+              src="https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+              alt="Register illustration"
+              objectFit="cover"
+              w="100%"
+              h="100%"
+              position="relative"
+              zIndex={1}
+            />
+            <Box
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              p={8}
+              color="white"
+              zIndex={2}
+            >
+              <Heading size="xl" mb={4}>Join Our Platform</Heading>
+              <Text fontSize="lg">Create your account and start managing your projects today.</Text>
+            </Box>
           </Box>
-        </Box>
 
-        {/* Right side - Register Form */}
-        <Box flex={1} display="flex" alignItems="center" justifyContent="center">
-          <Box w="full" maxW="md" p={8}>
-            <VStack spacing={8} align="stretch">
-              <Box>
-                <Heading size="xl" mb={2}>Create an account</Heading>
-                <Text color="gray.600">Please fill in your details to sign up</Text>
-              </Box>
+          {/* Right side - Register Form */}
+          <Box 
+            flex="1"
+            w="full"
+            maxW={{ base: 'md', lg: '500px' }}
+            mx="auto"
+            px={{ base: 4, lg: 8 }}
+            py={6}
+            bg={useColorModeValue('white', 'gray.800')}
+            borderRadius="xl"
+            boxShadow="lg"
+          >
+            <Stack spacing={8}>
+              <Stack spacing={2} align="center">
+                <Heading size="2xl" color="brand.500">Create an account</Heading>
+                <Text color="gray.600">
+                  Already have an account?{' '}
+                  <Link as={RouterLink} to="/login" color="brand.500" fontWeight="semibold">
+                    Sign in
+                  </Link>
+                </Text>
+              </Stack>
 
               <form onSubmit={handleSubmit(onSubmit)}>
-                <VStack spacing={6}>
+                <Stack spacing={6}>
+                  <HStack spacing={4}>
+                    <FormControl isInvalid={!!errors.first_name}>
+                      <FormLabel>First Name</FormLabel>
+                      <Input
+                        {...register('first_name')}
+                        size="lg"
+                        placeholder="Enter your first name"
+                        _focus={{ borderColor: 'brand.500' }}
+                      />
+                      <Text color="red.500" fontSize="sm" mt={1}>
+                        {errors.first_name?.message}
+                      </Text>
+                    </FormControl>
+
+                    <FormControl isInvalid={!!errors.last_name}>
+                      <FormLabel>Last Name</FormLabel>
+                      <Input
+                        {...register('last_name')}
+                        size="lg"
+                        placeholder="Enter your last name"
+                        _focus={{ borderColor: 'brand.500' }}
+                      />
+                      <Text color="red.500" fontSize="sm" mt={1}>
+                        {errors.last_name?.message}
+                      </Text>
+                    </FormControl>
+                  </HStack>
+
                   <FormControl isInvalid={!!errors.username}>
                     <FormLabel>Username</FormLabel>
                     <Input
+                      {...register('username')}
                       size="lg"
                       placeholder="Choose a username"
-                      {...register('username')}
+                      _focus={{ borderColor: 'brand.500' }}
                     />
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.username?.message}</Text>
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.username?.message}
+                    </Text>
                   </FormControl>
 
                   <FormControl isInvalid={!!errors.email}>
                     <FormLabel>Email</FormLabel>
                     <Input
-                      size="lg"
-                      type="email"
-                      placeholder="Enter your email"
                       {...register('email')}
-                    />
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.email?.message}</Text>
-                  </FormControl>
-
-                  <FormControl isInvalid={!!errors.first_name}>
-                    <FormLabel>First Name</FormLabel>
-                    <Input
+                      type="email"
                       size="lg"
-                      placeholder="Enter your first name"
-                      {...register('first_name')}
+                      placeholder="Enter your email"
+                      _focus={{ borderColor: 'brand.500' }}
                     />
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.first_name?.message}</Text>
-                  </FormControl>
-
-                  <FormControl isInvalid={!!errors.last_name}>
-                    <FormLabel>Last Name</FormLabel>
-                    <Input
-                      size="lg"
-                      placeholder="Enter your last name"
-                      {...register('last_name')}
-                    />
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.last_name?.message}</Text>
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.email?.message}
+                    </Text>
                   </FormControl>
 
                   <FormControl isInvalid={!!errors.password}>
                     <FormLabel>Password</FormLabel>
-                    <InputGroup size="lg">
+                    <InputGroup>
                       <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Create a password"
                         {...register('password')}
+                        type={showPassword ? 'text' : 'password'}
+                        size="lg"
+                        placeholder="Create a password"
+                        _focus={{ borderColor: 'brand.500' }}
                       />
-                      <InputRightElement>
+                      <InputRightElement h="full">
                         <IconButton
                           aria-label={showPassword ? 'Hide password' : 'Show password'}
                           icon={showPassword ? <FiEyeOff /> : <FiEye />}
                           variant="ghost"
                           onClick={() => setShowPassword(!showPassword)}
+                          size="lg"
+                          color="brand.500"
                         />
                       </InputRightElement>
                     </InputGroup>
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.password?.message}</Text>
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.password?.message}
+                    </Text>
                   </FormControl>
 
                   <FormControl isInvalid={!!errors.password2}>
                     <FormLabel>Confirm Password</FormLabel>
-                    <InputGroup size="lg">
+                    <InputGroup>
                       <Input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Confirm your password"
                         {...register('password2')}
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        size="lg"
+                        placeholder="Confirm your password"
+                        _focus={{ borderColor: 'brand.500' }}
                       />
-                      <InputRightElement>
+                      <InputRightElement h="full">
                         <IconButton
                           aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                           icon={showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                           variant="ghost"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          size="lg"
+                          color="brand.500"
                         />
                       </InputRightElement>
                     </InputGroup>
-                    <Text color="red.500" fontSize="sm" mt={1}>{errors.password2?.message}</Text>
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {errors.password2?.message}
+                    </Text>
                   </FormControl>
 
                   <Button
                     type="submit"
-                    colorScheme="blue"
                     size="lg"
-                    w="full"
+                    variant="solid"
                     isLoading={isSubmitting}
+                    w="full"
+                    mt={6}
+                    py={6}
+                    fontSize="md"
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
+                    }}
+                    _active={{
+                      transform: 'translateY(0)',
+                      boxShadow: 'md',
+                    }}
                   >
-                    Sign up
+                    Create account
                   </Button>
-                </VStack>
+                </Stack>
               </form>
-
-              <HStack justify="center" spacing={1}>
-                <Text>Already have an account?</Text>
-                <Link color="blue.500" href="/login" fontWeight="semibold">
-                  Sign in
-                </Link>
-              </HStack>
-            </VStack>
+            </Stack>
           </Box>
-        </Box>
-      </HStack>
-    </Container>
+        </Stack>
+      </Container>
+    </Box>
   );
 } 
